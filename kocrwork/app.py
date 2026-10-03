@@ -217,7 +217,8 @@ def _page():
     promo = ''
     if C.BUY_URL:
         promo = ('<nav class="hcta" aria-label="導入と相談">'
-                 f'<a class="hot" href="{H.escape(C.BUY_URL)}">導入の相談</a>'
+                 f'<a class="hot" href="{H.escape(C.BUY_URL)}">導入版</a>'
+                 '<a href="https://exbridge.jp/contact.php?subject=Kurage%20OCR%20Work%E3%81%AE%E7%9B%B8%E8%AB%87&amp;ref=kocrwork-head-contact#form">相談する</a>'
                  '<a href="https://exbridge.jp/ai-it-komon.html?ref=kocrwork-head-komon">AI-IT顧問</a>'
                  '<a href="https://kurage.exbridge.jp/reseller.html?ref=kocrwork-head-reseller">販売代理店募集</a></nav>')
     for k, v in (('__PUBLIC__', H.escape(C.PUBLIC or './')), ('__BRAND__', H.escape(C.BRAND)),
