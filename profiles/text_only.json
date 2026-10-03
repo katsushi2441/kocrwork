@@ -1,0 +1,9 @@
+{
+ "key": "text_only",
+ "label": "全文の読み取りだけ（項目は取り出さない）",
+ "note": "検索できる PDF にしたい・全文を保存したいときの設定。生成AIは使わない。",
+ "default_engine": "ocrmypdf",
+ "default_llm": "none",
+ "fields": [],
+ "items": []
+}

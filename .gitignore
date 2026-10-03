@@ -1,0 +1,9 @@
+.venv/
+outputs/
+.env
+__pycache__/
+*.pyc
+store/apps_*.json
+store/
+scripts/list_on_kappstore.py
+.gitattributes

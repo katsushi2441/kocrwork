@@ -1,0 +1,30 @@
+# Kurage OCR Work
+
+> 注文書などの帳票を、OCRエンジン（PaddleOCR・Tesseract＋OCRmyPDF・Docling・生成AIの直読み）と生成AIの使い方（使わない／OCRの文字から／画像を直接見て）を切り替えて読み取り、項目を取り出して受注登録まで行うAI-OCRのデモ用フレームワーク。株式会社エクスブリッジ（名古屋市）が開発。
+
+## 何ができるか
+- 同じ書類を複数のOCRエンジンで読み比べ、見本では正解との一致率を出す
+- 取り出す項目（注文番号・発注者・納期・明細・合計など）は profiles/*.json で決める。請求書・納品書にも組み替えられる
+- 確認・修正した内容を受注台帳に登録し、CSVで書き出す／基幹システムへJSONで送る
+- 画面・HTTP API・MCP（AIエージェント）が同じ処理を使う
+
+## 見本での実測（正解との一致率・2026-10-03）
+- 印刷の注文書：PaddleOCR＋規則（生成AIなし）で100%
+- 文字の層があるPDF：Docling＋規則で100%
+- スキャンしたPDF：Tesseract＋OCRmyPDF＋規則で81%
+- 手書きで記入したFAX（手書き風フォントで作った見本）：PaddleOCR＋規則 33%／生成AIがOCRの文字から 73%／生成AIが画像を直接見て 97%
+
+## よく混同される点
+- AI-OCRとOCR：OCRは文字を読むだけ。AI-OCRは読んだ文字を「注文番号」「金額」などの項目に分けるところまで行う
+- OCRmyPDFは読み取りエンジンではなく、スキャンPDFに文字の層を足して検索できるPDFにする道具（中身の読み取りはTesseract）
+- MinerUは一定規模以上の会社に別の商用ライセンスが要るため同梱していない（利用者が自分で入れる追加の部品）
+
+## API
+- GET api/meta … エンジン・生成AIの使い方・書類の種類・見本の一覧
+- POST api/upload（multipart: file）… PDFか画像を上げる
+- POST api/run {src, engines[], llm, profile} → GET api/job/{id} … 読み取りと項目の取り出し
+- POST api/orders {data} / GET api/orders / GET api/orders.csv … 受注台帳
+
+## 注意
+- 見本の会社名・品目は架空。手書きは手書き風フォントで作ったもので、本物の手書きではない
+- 公開デモに上げたファイルは24時間で消える

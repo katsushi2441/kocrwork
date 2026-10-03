@@ -1,0 +1,17 @@
+[Unit]
+Description=Kurage OCR Work (kocrwork) :18348
+After=network-online.target
+
+[Service]
+WorkingDirectory=/home/kojima/work/kocrwork
+EnvironmentFile=-/home/kojima/work/kocrwork/.env
+Environment=CUDA_VISIBLE_DEVICES=
+Environment=PYTHONUNBUFFERED=1
+Environment=PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK=True
+ExecStart=/home/kojima/work/kocrwork/.venv/bin/python -m uvicorn kocrwork.app:app --host 0.0.0.0 --port 18348 --proxy-headers --forwarded-allow-ips=*
+Restart=on-failure
+RestartSec=5
+Nice=5
+
+[Install]
+WantedBy=default.target

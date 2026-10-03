@@ -1,0 +1,8 @@
+{
+ "key": "fax_hand",
+ "label": "手書きFAXの注文書",
+ "note": "手書きで記入された FAX。OCR エンジンより、生成AIに画像を直接読ませるほうが合うことが多い。",
+ "extends": "order",
+ "default_engine": "paddleocr",
+ "default_llm": "vision"
+}

@@ -1,0 +1,186 @@
+{
+ "order_print": {
+  "order_no": "PO-2026-1017",
+  "order_date": "2026-10-01",
+  "buyer_company": "株式会社みなと食品",
+  "buyer_person": "佐藤 花子",
+  "buyer_tel": "052-000-1234",
+  "buyer_fax": "052-000-1235",
+  "ship_to": "愛知県名古屋市港区港町1-2-3 みなと食品 第二倉庫",
+  "due_date": "2026-10-10",
+  "items": [
+   {
+    "code": "A-101",
+    "name": "有機しょうゆ 1L",
+    "qty": 24,
+    "unit": "本",
+    "price": 680,
+    "amount": 16320
+   },
+   {
+    "code": "A-205",
+    "name": "米みそ 750g",
+    "qty": 12,
+    "unit": "個",
+    "price": 540,
+    "amount": 6480
+   },
+   {
+    "code": "B-310",
+    "name": "本みりん 500ml",
+    "qty": 18,
+    "unit": "本",
+    "price": 420,
+    "amount": 7560
+   },
+   {
+    "code": "C-012",
+    "name": "昆布だし 10袋入",
+    "qty": 30,
+    "unit": "箱",
+    "price": 380,
+    "amount": 11400
+   }
+  ],
+  "subtotal": 41760,
+  "tax": 3340,
+  "total": 45100,
+  "note": "午前中の納品を希望します。"
+ },
+ "order_fax_hand": {
+  "order_no": "1018",
+  "order_date": "2026-10-02",
+  "buyer_company": "さくら食堂",
+  "buyer_person": "田中",
+  "buyer_tel": "052-000-5678",
+  "buyer_fax": "052-000-5679",
+  "ship_to": "名古屋市中区栄9-8-7 さくら食堂",
+  "due_date": "2026-10-05",
+  "items": [
+   {
+    "code": "A-101",
+    "name": "有機しょうゆ 1L",
+    "qty": 6,
+    "unit": "本",
+    "price": 680,
+    "amount": 4080
+   },
+   {
+    "code": "C-012",
+    "name": "昆布だし 10袋入",
+    "qty": 5,
+    "unit": "箱",
+    "price": 380,
+    "amount": 1900
+   },
+   {
+    "code": "D-440",
+    "name": "かつお節 500g",
+    "qty": 3,
+    "unit": "袋",
+    "price": 1850,
+    "amount": 5550
+   }
+  ],
+  "subtotal": 11530,
+  "tax": 922,
+  "total": 12452,
+  "note": "裏口に置いてください"
+ },
+ "order_scan": {
+  "order_no": "PO-2026-1017",
+  "order_date": "2026-10-01",
+  "buyer_company": "株式会社みなと食品",
+  "buyer_person": "佐藤 花子",
+  "buyer_tel": "052-000-1234",
+  "buyer_fax": "052-000-1235",
+  "ship_to": "愛知県名古屋市港区港町1-2-3 みなと食品 第二倉庫",
+  "due_date": "2026-10-10",
+  "items": [
+   {
+    "code": "A-101",
+    "name": "有機しょうゆ 1L",
+    "qty": 24,
+    "unit": "本",
+    "price": 680,
+    "amount": 16320
+   },
+   {
+    "code": "A-205",
+    "name": "米みそ 750g",
+    "qty": 12,
+    "unit": "個",
+    "price": 540,
+    "amount": 6480
+   },
+   {
+    "code": "B-310",
+    "name": "本みりん 500ml",
+    "qty": 18,
+    "unit": "本",
+    "price": 420,
+    "amount": 7560
+   },
+   {
+    "code": "C-012",
+    "name": "昆布だし 10袋入",
+    "qty": 30,
+    "unit": "箱",
+    "price": 380,
+    "amount": 11400
+   }
+  ],
+  "subtotal": 41760,
+  "tax": 3340,
+  "total": 45100,
+  "note": "午前中の納品を希望します。"
+ },
+ "order_digital": {
+  "order_no": "PO-2026-1017",
+  "order_date": "2026-10-01",
+  "buyer_company": "株式会社みなと食品",
+  "buyer_person": "佐藤 花子",
+  "buyer_tel": "052-000-1234",
+  "buyer_fax": "052-000-1235",
+  "ship_to": "愛知県名古屋市港区港町1-2-3 みなと食品 第二倉庫",
+  "due_date": "2026-10-10",
+  "items": [
+   {
+    "code": "A-101",
+    "name": "有機しょうゆ 1L",
+    "qty": 24,
+    "unit": "本",
+    "price": 680,
+    "amount": 16320
+   },
+   {
+    "code": "A-205",
+    "name": "米みそ 750g",
+    "qty": 12,
+    "unit": "個",
+    "price": 540,
+    "amount": 6480
+   },
+   {
+    "code": "B-310",
+    "name": "本みりん 500ml",
+    "qty": 18,
+    "unit": "本",
+    "price": 420,
+    "amount": 7560
+   },
+   {
+    "code": "C-012",
+    "name": "昆布だし 10袋入",
+    "qty": 30,
+    "unit": "箱",
+    "price": 380,
+    "amount": 11400
+   }
+  ],
+  "subtotal": 41760,
+  "tax": 3340,
+  "total": 45100,
+  "note": "午前中の納品を希望します。"
+ }
+}

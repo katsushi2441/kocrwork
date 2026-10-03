@@ -1,0 +1,278 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI-OCRで注文書を受注登録｜エンジンと生成AIを切り替えて試す</title>
+<meta name="description" content="注文書の画像やPDFを、PaddleOCR・Tesseract・Docling・生成AIで読み比べ、項目を取り出して受注登録まで試せるAI-OCRのデモです。手書きFAXは生成AIに画像を読ませるなど、書類に合わせて読み方を切り替えられます。">
+<link rel="canonical" href="__PUBLIC__">
+<link rel="icon" href="static/favicon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="__BRAND__">
+<meta property="og:title" content="AI-OCRで注文書を受注登録｜__BRAND__">
+<meta property="og:description" content="OCRエンジンと生成AIを切り替えて、注文書・手書きFAXを読み比べ。項目を取り出して受注登録まで、その場で試せます。">
+<meta property="og:url" content="__PUBLIC__">
+<meta property="og:image" content="__PUBLIC__static/ogp.png">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[
+{"@type":"WebSite","name":"__BRAND__","url":"__PUBLIC__"},
+{"@type":"SoftwareApplication","name":"Kurage OCR Work","applicationCategory":"BusinessApplication","operatingSystem":"Linux","description":"OCRエンジン（PaddleOCR・Tesseract＋OCRmyPDF・Docling）と生成AIを切り替えて、注文書などの帳票を読み取り、項目を取り出して受注登録まで行うAI-OCRのフレームワーク。画面・API・MCPが同じ中身を使う。","publisher":{"@type":"Organization","name":"株式会社エクスブリッジ","url":"https://exbridge.jp/"}},
+{"@type":"FAQPage","mainEntity":[
+ {"@type":"Question","name":"AI-OCRとは何ですか？","acceptedAnswer":{"@type":"Answer","text":"文字を読み取るOCRに、生成AIなどの判断を組み合わせて、書類から「注文番号」「金額」「明細」といった項目まで取り出す仕組みです。読み取った文字を項目に分ける部分と、手書きや崩れた文字を読む部分にAIを使います。"}},
+ {"@type":"Question","name":"手書きのFAXも読めますか？","acceptedAnswer":{"@type":"Answer","text":"読めます。このデモの見本では、手書きで記入されたFAXの注文書を、OCRの文字だけで項目にすると約3割、生成AIに画像を直接見せると約9割の項目が正解と一致しました。書類によって合う読み方が違うので、切り替えて比べられるようにしています。"}},
+ {"@type":"Question","name":"生成AIを使わずに動かせますか？","acceptedAnswer":{"@type":"Answer","text":"動かせます。生成AIを「使わない」にすると、見出しの語の右や下にある値を規則で拾います。定型の印刷の注文書なら、PaddleOCRと規則だけで見本の全項目が一致しました。"}},
+ {"@type":"Question","name":"書類を社外に出さずに使えますか？","acceptedAnswer":{"@type":"Answer","text":"使えます。OCRエンジンはすべて自社のサーバーで動き、生成AIもローカルのモデル（gemma4など）を選べます。クラウドのAPIに切り替えることもできます。"}}
+]}]}</script>
+<style>
+:root{--ink:#14222f;--mut:#5d6b7a;--line:#dde6ec;--bg:#f4f7f9;--card:#fff;--teal:#0a8f85;--teal-d:#07756d;--teal-l:#e6f5f3;--amber:#fff6dc;--red:#c23a2b;--ok:#1b7f3a;--okl:#e8f6ec;--ngl:#fdecea}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.75 "Noto Sans JP","Hiragino Kaku Gothic ProN",Meiryo,sans-serif}
+a{color:var(--teal-d)}
+header{background:#fff;border-bottom:1px solid var(--line)}
+.bar{max-width:1180px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:8px 10px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);font-weight:800;font-size:18px}
+.brand img{width:36px;height:36px}
+.brand small{display:block;font-size:11px;font-weight:600;color:var(--mut);letter-spacing:.04em}
+.hcta{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+.hcta a{font-size:12.5px;font-weight:700;text-decoration:none;border-radius:999px;padding:5px 11px;border:1px solid var(--line);color:var(--teal-d);background:#fff;white-space:nowrap}
+.hcta a.hot{background:var(--teal);border-color:var(--teal);color:#fff}
+@media(max-width:400px){.hcta{gap:4px}.hcta a{font-size:11.5px;padding:4px 8px}}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:16px}
+.intro{display:flex;gap:18px;align-items:center;padding-block:22px 8px}
+.intro img{width:96px;height:auto;flex:none}
+h1{font-size:clamp(21px,3.2vw,28px);line-height:1.4;margin:0 0 6px;text-wrap:balance}
+.lead{color:var(--mut);margin:0}
+h2{font-size:18px;margin:0 0 10px}
+.step{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:14px 0}
+.step h2 .n{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--teal);color:#fff;font-size:14px;margin-right:8px;vertical-align:2px}
+.samples{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.sample{border:2px solid var(--line);border-radius:10px;background:#fff;padding:6px;cursor:pointer;text-align:left;font:inherit;color:inherit}
+.sample img{width:100%;height:auto;aspect-ratio:1/1.41;object-fit:cover;object-position:top;border-radius:6px;background:#eee;display:block}
+.sample span{display:block;font-size:12.5px;line-height:1.45;margin-top:6px}
+.sample.on,.drop.on{border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-l)}
+.drop{border:2px dashed #b9c8d2;border-radius:10px;display:grid;place-items:center;text-align:center;padding:12px;font-size:13px;color:var(--mut);cursor:pointer;min-height:150px;background:#fbfdfe}
+.drop input{display:none}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:760px){.opts{grid-template-columns:1fr}.intro img{width:70px}}
+.lab{font-weight:800;font-size:14px;margin:0 0 6px}
+.choices{display:flex;flex-direction:column;gap:6px}
+.choice{display:flex;gap:8px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:#fff;cursor:pointer}
+.choice input{margin-top:5px}
+.choice b{font-size:14px}
+.choice small{display:block;color:var(--mut);font-size:12.5px;line-height:1.5}
+.choice.off{opacity:.55;cursor:not-allowed}
+.choice:has(input:checked){border-color:var(--teal);background:var(--teal-l)}
+select{font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;background:#fff;max-width:100%}
+.runrow{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:14px}
+.btn{display:inline-block;background:var(--teal);color:#fff;border:0;border-radius:10px;padding:12px 22px;font:inherit;font-weight:800;cursor:pointer;text-decoration:none}
+.btn:disabled{background:#9db8b5;cursor:wait}
+.btn.ghost{background:#fff;color:var(--teal-d);border:1px solid var(--line)}
+.btn.sm{padding:7px 12px;font-size:13px}
+.btn:focus-visible,.sample:focus-visible,.choice:focus-within{outline:3px solid #f2b705;outline-offset:2px}
+.note{font-size:12.5px;color:var(--mut)}
+.res{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:16px;align-items:start}
+@media(max-width:900px){.res{grid-template-columns:1fr}}
+.prev{background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px;position:sticky;top:8px}
+.prev img{width:100%;height:auto;display:block}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.tab{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;color:var(--ink)}
+.tab.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tab .pct{font-weight:800;margin-left:6px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px}
+.status{padding:10px 12px;border-radius:10px;background:var(--amber);font-size:14px;margin-bottom:10px}
+.err{padding:10px 12px;border-radius:10px;background:var(--ngl);color:var(--red);font-size:14px;margin-bottom:10px}
+pre.ocr{white-space:pre-wrap;word-break:break-all;background:#f7f9fa;border:1px solid var(--line);border-radius:8px;padding:10px;font-size:12.5px;max-height:320px;overflow:auto;margin:0}
+.meta{display:flex;gap:8px;flex-wrap:wrap;font-size:12.5px;margin-bottom:10px}
+.meta span{background:#eef3f6;border-radius:999px;padding:2px 10px}
+.fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px 12px;margin:10px 0}
+.fields label{font-size:12.5px;font-weight:700;color:var(--mut);display:block}
+.fields input{width:100%;font:inherit;font-size:14px;padding:6px 8px;border:1px solid var(--line);border-radius:8px}
+.fields input.ok{border-color:#7cc196;background:var(--okl)}
+.fields input.ng{border-color:#e7a29a;background:var(--ngl)}
+.tw{overflow-x:auto}
+table.items{border-collapse:collapse;width:100%;min-width:560px;font-size:13px}
+table.items th,table.items td{border:1px solid var(--line);padding:0}
+table.items th{background:#f1f5f7;padding:5px;font-size:12px}
+table.items input{width:100%;border:0;font:inherit;padding:5px;background:transparent}
+.cmp{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:6px}
+.cmp th,.cmp td{border-bottom:1px solid var(--line);padding:6px;text-align:left}
+.cmp td.n{text-align:right;font-variant-numeric:tabular-nums}
+details.ocrbox summary{cursor:pointer;font-weight:700;font-size:13.5px;margin:8px 0}
+.orders{width:100%;border-collapse:collapse;font-size:13px;min-width:640px}
+.orders th,.orders td{border-bottom:1px solid var(--line);padding:6px;text-align:left;vertical-align:top}
+.faq details{border:1px solid var(--line);border-radius:10px;background:#fff;margin:0 0 8px;padding:8px 12px}
+.faq summary{cursor:pointer;font-weight:800}
+.about{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.about div{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px}
+code{background:#eef3f6;border-radius:4px;padding:1px 5px;font-size:12.5px}
+pre.code{background:#14222f;color:#e8eef2;border-radius:10px;padding:12px;overflow-x:auto;font-size:12.5px}
+footer{margin-top:30px;background:#fff;border-top:1px solid var(--line);padding-block:16px;font-size:13px;color:var(--mut)}
+@media (prefers-reduced-motion:no-preference){.status{animation:pulse 1.6s ease-in-out infinite}@keyframes pulse{50%{background:#fdeebb}}}
+</style>__TRACK__</head><body>
+<header><div class="bar">
+ <a class="brand" href="./"><img src="https://exbridge.jp/images/logo-mark-128.png" width="36" height="36" alt="株式会社エクスブリッジ"><span>__BRAND__<small>AI-OCR DEMO FRAMEWORK</small></span></a>
+ __HEAD_CTA__
+</div></header>
+<main class="wrap">
+ <div class="intro">
+  <img src="static/mascot.png" width="213" height="240" alt="Kurage">
+  <div><h1>AI-OCRで注文書を読んで、受注登録まで試す</h1>
+  <p class="lead">OCRエンジンと生成AIを切り替えて、同じ注文書を読み比べられます。印刷の注文書・スキャンしたPDF・手書きのFAXで、合う読み方が違うことをその場で確かめられます。</p></div>
+ </div>
+
+ <section class="step" aria-labelledby="s1"><h2 id="s1"><span class="n">1</span>読む書類を選ぶ</h2>
+  <div class="samples" id="samples"></div>
+  <p class="note" id="upnote"></p>
+ </section>
+
+ <section class="step" aria-labelledby="s2"><h2 id="s2"><span class="n">2</span>読み方を選ぶ</h2>
+  <p style="margin:0 0 10px"><label class="lab" for="profile">書類の種類　</label><select id="profile"></select> <span class="note" id="profnote"></span></p>
+  <div class="opts">
+   <div><p class="lab">OCRエンジン <label class="note" style="font-weight:400"><input type="checkbox" id="cmp"> 全部で読み比べる</label></p><div class="choices" id="engines"></div></div>
+   <div><p class="lab">生成AI（__LLM_LABEL__）</p><div class="choices" id="llms"></div>
+    <p class="note" style="margin-top:8px">生成AIは当社のサーバーで動くローカルのモデルです。客先の環境では、クラウドのAPIにも切り替えられます。</p></div>
+  </div>
+  <div class="runrow"><button class="btn" id="run" type="button">読み取る</button><span class="note" id="runnote">見本は正解と比べた一致率も出ます。</span></div>
+ </section>
+
+ <section class="step" id="out" hidden aria-labelledby="s3"><h2 id="s3"><span class="n">3</span>結果を確かめて、受注登録する</h2>
+  <div class="res">
+   <div class="prev"><img id="pimg" alt="読み取った書類"></div>
+   <div>
+    <div id="cmpbox"></div>
+    <div class="tabs" id="tabs"></div>
+    <div id="detail"></div>
+   </div>
+  </div>
+ </section>
+
+ <section class="step" aria-labelledby="s4"><h2 id="s4"><span class="n">4</span>受注の一覧（あなたが登録した分だけ表示）</h2>
+  <div class="tw"><table class="orders"><thead><tr><th>受注ID</th><th>登録日時</th><th>注文番号</th><th>発注者</th><th>希望納期</th><th>明細</th><th>合計</th><th>読み方</th><th></th></tr></thead><tbody id="olist"><tr><td colspan="9" class="note">まだありません。</td></tr></tbody></table></div>
+  <p style="margin:10px 0 0"><a class="btn ghost sm" href="api/orders.csv">CSVで書き出す（基幹への取り込み用）</a> <span class="note" id="hooknote"></span></p>
+ </section>
+
+ <section aria-labelledby="ab" style="margin-top:26px"><h2 id="ab">客先でOCRのデモを即興で組むためのフレームワーク</h2>
+  <p class="lead" style="margin-bottom:12px">Kurage OCR Work は、この画面そのものを客先の書類に合わせて組み替えるための土台です。読み取りの部品と取り出す項目を設定で切り替え、画面・API・MCPのどこからでも同じ処理を呼べます。</p>
+  <div class="about">
+   <div><b>エンジンを差し替える</b><p class="note">PaddleOCR・Tesseract＋OCRmyPDF・Docling・生成AIの直読みを同じ形の結果で返します。MinerUは利用者が自分で入れる追加の部品です。新しいエンジンも1つのクラスを足すだけで画面に出ます。</p></div>
+   <div><b>生成AIを使うかを選ぶ</b><p class="note">使わない（規則で拾う）／OCRの文字から項目にする／画像を直接見て項目にする、の3通り。AIを使えない客先でも、定型の帳票なら規則で動きます。</p></div>
+   <div><b>項目は設定ファイルで決める</b><p class="note">注文書・請求書・納品書など、取り出す項目と明細の列を <code>profiles/*.json</code> に書くだけで、画面の入力欄と生成AIへの指示が変わります。</p></div>
+   <div><b>受注登録と連携</b><p class="note">確認した内容を台帳に登録し、CSVで書き出すか、基幹システムやkintoneの中継へJSONで送ります（送り先は設定で指定）。</p></div>
+  </div>
+  <p class="lab" style="margin-top:14px">AIエージェントから呼ぶ（MCP）</p>
+  <pre class="code">{"mcpServers":{"kocrwork":{"command":"/path/to/kocrwork/.venv/bin/python","args":["-m","kocrwork.mcp_server"]}}}
+# 道具: list_engines / read_document(path, engine, llm, profile) / register_order(data) / list_orders</pre>
+ </section>
+
+ <section class="faq" aria-labelledby="fq" style="margin-top:22px"><h2 id="fq">よくある質問</h2>
+  <details><summary>AI-OCRとは何ですか？</summary><p>文字を読み取るOCRに、生成AIなどの判断を組み合わせて、書類から「注文番号」「金額」「明細」といった項目まで取り出す仕組みです。読み取った文字を項目に分ける部分と、手書きや崩れた文字を読む部分にAIを使います。</p></details>
+  <details><summary>手書きのFAXも読めますか？</summary><p>読めます。このデモの見本では、手書きで記入されたFAXの注文書を、OCRの文字だけで項目にすると約3割、生成AIに画像を直接見せると約9割の項目が正解と一致しました。見本の手書きは手書き風のフォントで作ったものなので、実際の書類で試して確かめてください。</p></details>
+  <details><summary>生成AIを使わずに動かせますか？</summary><p>動かせます。生成AIを「使わない」にすると、見出しの語の右や下にある値を規則で拾います。定型の印刷の注文書なら、PaddleOCRと規則だけで見本の全項目が一致しました。</p></details>
+  <details><summary>書類を社外に出さずに使えますか？</summary><p>使えます。OCRエンジンはすべて自社のサーバーで動き、生成AIもローカルのモデル（gemma4など）を選べます。このデモに上げたファイルは24時間で消えます。</p></details>
+  <details><summary>どのエンジンを選べばいいですか？</summary><p>印刷のきれいな書類はPaddleOCR、Excelなどから書き出した文字の入ったPDFはDocling、スキャンしたPDFを検索できるようにしたいならTesseract＋OCRmyPDF、手書きや崩れたFAXは生成AIに画像を読ませる方法が向いています。「全部で読み比べる」で、手元の書類に合うものを確かめられます。</p></details>
+ </section>
+</main>
+<footer><div class="wrap">提供：<a href="https://exbridge.jp/">株式会社エクスブリッジ</a>（名古屋市）。OCRエンジンは PaddleOCR（Apache-2.0）・Tesseract（Apache-2.0）・OCRmyPDF（MPL-2.0）・Docling（MIT）。見本の注文書の会社名・品目は架空で、手書きは手書き風フォント（Yomogi・SIL OFL）で作ったものです。</div></footer>
+<script>
+(function(){
+var $=function(id){return document.getElementById(id)};
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+var META=null, SRC=null, JOB=null, CUR=0;
+function prof(){return META.profiles.filter(function(p){return p.key===$('profile').value})[0]}
+function api(u,o){return fetch(u,o).then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error(j.detail||'エラー');return j})})}
+
+function pick(src,el){SRC=src;document.querySelectorAll('.sample,.drop').forEach(function(x){x.classList.remove('on')});el.classList.add('on');$('pimg').src='api/preview?src='+encodeURIComponent(src)}
+
+function drawSamples(){
+ var h=META.samples.map(function(s){return '<button type="button" class="sample" data-src="sample:'+esc(s.name)+'"><img loading="lazy" src="api/preview?w=320&src=sample:'+encodeURIComponent(s.name)+'" alt=""><span>'+esc(s.label)+'</span></button>'}).join('');
+ h+='<label class="drop" id="drop"><input type="file" id="file" accept=".pdf,.png,.jpg,.jpeg,.tif,.tiff,.webp,.bmp"><span><b>手元のPDF・画像を使う</b><br>ここに置くか押して選ぶ<br>'+META.limits.mb+'MB・'+META.limits.pages+'ページまで</span></label>';
+ $('samples').innerHTML=h;
+ document.querySelectorAll('.sample').forEach(function(b){b.addEventListener('click',function(){pick(b.dataset.src,b);
+  // 手書きFAXの見本を選んだら、合う読み方の設定に合わせる
+  if(b.dataset.src.indexOf('fax')>=0)setProfile('fax_hand');else if(b.dataset.src.indexOf('digital')>=0){setProfile('order');setEngine('docling')}else if(b.dataset.src.indexOf('scan')>=0){setProfile('order');setEngine('ocrmypdf')}else setProfile('order')})});
+ var d=$('drop'),f=$('file');
+ f.addEventListener('change',function(){if(f.files[0])up(f.files[0])});
+ ['dragover','dragenter'].forEach(function(e){d.addEventListener(e,function(ev){ev.preventDefault();d.classList.add('on')})});
+ d.addEventListener('drop',function(ev){ev.preventDefault();if(ev.dataTransfer.files[0])up(ev.dataTransfer.files[0])});
+}
+function up(file){
+ var fd=new FormData();fd.append('file',file);$('upnote').textContent='アップロードしています…';
+ api('api/upload',{method:'POST',body:fd}).then(function(j){$('upnote').textContent=j.name+'（'+j.pages+'ページ）を読み込みました。上げたファイルは24時間で消えます。';pick(j.src,$('drop'))}).catch(function(e){$('upnote').textContent=e.message});
+}
+function setProfile(k){$('profile').value=k;onProfile()}
+function setEngine(k){var r=document.querySelector('input[name=eng][value="'+k+'"]');if(r&&!r.disabled)r.checked=true}
+function onProfile(){var p=prof();$('profnote').textContent=p.note||'';setEngine(p.default_engine);var l=document.querySelector('input[name=llm][value="'+p.default_llm+'"]');if(l)l.checked=true}
+
+function drawOpts(){
+ $('profile').innerHTML=META.profiles.map(function(p){return '<option value="'+esc(p.key)+'">'+esc(p.label)+'</option>'}).join('');
+ $('engines').innerHTML=META.engines.map(function(e){return '<label class="choice'+(e.available?'':' off')+'"><input type="radio" name="eng" value="'+esc(e.key)+'"'+(e.available?'':' disabled')+'><span><b>'+esc(e.label)+'</b><small>'+esc(e.note)+(e.available?'':'<br>使えません：'+esc(e.why))+'</small></span></label>'}).join('');
+ var tip={none:'定型の帳票向き。見出しの右や下の値を拾う。速い',text:'印刷の書類向き。OCRの読み違いをAIが文脈で補う',vision:'手書き・崩れたFAX向き。画像そのものを見て読む'};
+ $('llms').innerHTML=Object.keys(META.llm_modes).map(function(k){return '<label class="choice"><input type="radio" name="llm" value="'+k+'"><span><b>'+esc(META.llm_modes[k])+'</b><small>'+esc(tip[k]||'')+'</small></span></label>'}).join('');
+ $('profile').addEventListener('change',onProfile);onProfile();
+}
+
+function run(){
+ if(!SRC){$('runnote').textContent='先に書類を選んでください。';return}
+ var eng=$('cmp').checked?META.engines.filter(function(e){return e.available&&e.key!=='llm-vision'}).map(function(e){return e.key}):[(document.querySelector('input[name=eng]:checked')||{}).value];
+ var llm=(document.querySelector('input[name=llm]:checked')||{}).value||'none';
+ $('run').disabled=true;$('out').hidden=false;$('tabs').innerHTML='';$('cmpbox').innerHTML='';$('detail').innerHTML='<div class="status">送っています…</div>';
+ $('out').scrollIntoView({behavior:'smooth',block:'start'});
+ api('api/run',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({src:SRC,engines:eng,llm:llm,profile:$('profile').value})}).then(function(j){JOB={id:j.job,src:SRC,llm:llm,profile:$('profile').value};CUR=0;poll()}).catch(function(e){$('detail').innerHTML='<div class="err">'+esc(e.message)+'</div>';$('run').disabled=false});
+}
+function poll(){
+ api('api/job/'+JOB.id).then(function(j){
+  JOB.data=j;drawTabs(j);
+  if(j.state==='queued'||j.state==='running'){setTimeout(poll,1500)}else{$('run').disabled=false}
+ }).catch(function(e){$('detail').innerHTML='<div class="err">'+esc(e.message)+'</div>';$('run').disabled=false});
+}
+function lab(k){var e=META.engines.filter(function(x){return x.key===k})[0];return e?e.label:k}
+function pct(r){return r.score&&r.score.rate!=null?Math.round(r.score.rate*100)+'%':''}
+function drawTabs(j){
+ var rs=j.results;
+ $('tabs').innerHTML=j.engines.map(function(k,i){var r=rs[i];return '<button type="button" class="tab'+(i===CUR?' on':'')+'" data-i="'+i+'">'+esc(lab(k))+(r?'<span class="pct">'+(r.error&&!r.fields?'×':pct(r))+'</span>':(j.current===k?' …':''))+'</button>'}).join('');
+ document.querySelectorAll('.tab').forEach(function(b){b.addEventListener('click',function(){CUR=+b.dataset.i;drawTabs(JOB.data)})});
+ if(rs.length>1||j.engines.length>1){
+  $('cmpbox').innerHTML='<div class="panel" style="margin-bottom:10px"><b>読み比べ</b>（生成AI：'+esc(META.llm_modes[j.llm])+'）<div class="tw"><table class="cmp"><thead><tr><th>エンジン</th><th>読み取り</th><th>項目</th><th>正解との一致</th></tr></thead><tbody>'+j.engines.map(function(k,i){var r=rs[i];if(!r)return '<tr><td>'+esc(lab(k))+'</td><td colspan="3" class="note">'+(j.current===k?esc(j.progress):'順番待ち')+'</td></tr>';return '<tr><td>'+esc(lab(k))+'</td><td class="n">'+r.ocr.seconds+'秒</td><td class="n">'+(r.llm_seconds!=null?r.llm_seconds+'秒':'—')+'</td><td class="n">'+(r.error&&!r.fields?'<span style="color:var(--red)">失敗</span>':(pct(r)||'—'))+'</td></tr>'}).join('')+'</tbody></table></div></div>';
+ }
+ var r=rs[CUR];
+ if(!r){$('detail').innerHTML='<div class="status">'+esc(j.progress||'順番を待っています')+'（初回はエンジンの読み込みに時間がかかります）</div>';return}
+ drawDetail(r);
+}
+function val(v){return v==null?'':v}
+function drawDetail(r){
+ var p=prof(),h='',sc=r.score;
+ h+='<div class="meta"><span>'+esc(lab(r.engine))+'：'+r.ocr.seconds+'秒</span><span>生成AI：'+esc(META.llm_modes[r.llm])+(r.llm_seconds!=null?'（'+r.llm_seconds+'秒）':'')+'</span>'+(sc?'<span>正解との一致：'+Math.round(sc.rate*100)+'%（明細 '+sc.items_ok+'/'+sc.items_total+'）</span>':'')+'</div>';
+ if(r.error)h+='<div class="err">'+esc(r.error)+'</div>';
+ if(r.fields){
+  h+='<div class="fields">'+p.fields.map(function(f){var c=sc?(sc.fields[f.key]?' ok':' ng'):'';return '<div><label for="f_'+f.key+'">'+esc(f.label)+'</label><input id="f_'+f.key+'" data-k="'+f.key+'" class="fv'+c+'" value="'+esc(val(r.fields[f.key]))+'"></div>'}).join('')+'</div>';
+  if(p.items&&p.items.length){
+   var rows=(r.fields.items||[]).slice(),want=Math.max(3,rows.length+1);while(rows.length<want)rows.push({});
+   h+='<div class="tw"><table class="items"><thead><tr>'+p.items.map(function(c){return '<th>'+esc(c.label)+'</th>'}).join('')+'</tr></thead><tbody id="itb">'+rows.map(function(it){return '<tr>'+p.items.map(function(c){return '<td><input data-c="'+c.key+'" value="'+esc(val(it[c.key]))+'" aria-label="'+esc(c.label)+'"></td>'}).join('')+'</tr>'}).join('')+'</tbody></table></div>';
+  }
+  h+='<div class="runrow"><button class="btn" id="reg" type="button">この内容で受注登録する</button><span class="note" id="regnote">内容は登録前に直せます。'+(sc?'緑は正解と一致、赤は不一致。':'')+'</span></div>';
+ }
+ var files=r.ocr.files||{};
+ if(files.searchable_pdf)h+='<p><a class="btn ghost sm" href="'+esc(files.searchable_pdf)+'">文字の層つきPDF（検索できるPDF）を保存</a></p>';
+ h+='<details class="ocrbox"'+(r.fields?'':' open')+'><summary>読み取った文字（'+esc(lab(r.engine))+'）</summary><pre class="ocr">'+esc(r.ocr.text||'（文字なし）')+'</pre></details>';
+ $('detail').innerHTML=h;
+ var b=$('reg');if(b)b.addEventListener('click',function(){register(r)});
+}
+function collect(){
+ var d={};document.querySelectorAll('.fv').forEach(function(i){d[i.dataset.k]=i.value.trim()||null});
+ var items=[];document.querySelectorAll('#itb tr').forEach(function(tr){var o={},any=false;tr.querySelectorAll('input').forEach(function(i){o[i.dataset.c]=i.value.trim()||null;if(i.value.trim())any=true});if(any)items.push(o)});
+ d.items=items;return d;
+}
+function register(r){
+ api('api/orders',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({data:collect(),source:JOB.src,engine:r.engine,llm:r.llm,profile:r.profile})}).then(function(j){$('regnote').textContent='受注ID '+j.id+' で登録しました（'+j.webhook+'）。';loadOrders()}).catch(function(e){$('regnote').textContent=e.message});
+}
+function loadOrders(){
+ api('api/orders').then(function(j){
+  $('hooknote').textContent=j.webhook?'登録した受注は、設定された送り先にも送っています。':'このデモでは外部への送信はしていません（客先では基幹システムやkintoneへ送る設定ができます）。';
+  if(!j.orders.length){$('olist').innerHTML='<tr><td colspan="9" class="note">まだありません。</td></tr>';return}
+  $('olist').innerHTML=j.orders.map(function(o){var d=o.data;return '<tr><td>'+o.id+'</td><td>'+esc(o.created)+'</td><td>'+esc(d.order_no)+'</td><td>'+esc(d.buyer_company)+'</td><td>'+esc(d.due_date)+'</td><td>'+(d.items||[]).length+'行</td><td>'+esc(d.total)+'</td><td class="note">'+esc(lab(o.engine))+'／'+esc((META.llm_modes[o.llm]||o.llm))+'</td><td><button class="btn ghost sm" data-del="'+o.id+'" type="button">消す</button></td></tr>'}).join('');
+  document.querySelectorAll('[data-del]').forEach(function(b){b.addEventListener('click',function(){api('api/orders/'+b.dataset.del,{method:'DELETE'}).then(loadOrders)})});
+ });
+}
+$('run').addEventListener('click',run);
+api('api/meta').then(function(m){META=m;drawSamples();drawOpts();var f=document.querySelector('.sample');if(f)f.click();loadOrders()});
+})();
+</script>
+</body></html>

@@ -1,0 +1,29 @@
+{
+ "key": "order",
+ "label": "注文書（受注登録）",
+ "note": "FAX・メール添付・郵送で届く注文書を読み、受注として登録する。",
+ "default_engine": "paddleocr",
+ "default_llm": "text",
+ "fields": [
+  {"key": "order_no", "label": "注文番号", "rule": ["注文番号", "注文No", "発注番号", "No."]},
+  {"key": "order_date", "label": "注文日", "type": "date", "rule": ["注文日", "発注日", "日付"]},
+  {"key": "buyer_company", "label": "発注者（会社名）", "rule": ["発注者", "発注元", "会社名", "貴社名"]},
+  {"key": "buyer_person", "label": "ご担当", "rule": ["ご担当", "担当者", "担当"]},
+  {"key": "buyer_tel", "label": "電話", "type": "tel", "rule": ["電話", "TEL", "Tel"]},
+  {"key": "buyer_fax", "label": "FAX", "type": "tel", "rule": ["FAX", "Fax", "ファクス"]},
+  {"key": "ship_to", "label": "納品先", "rule": ["納品先", "届け先", "送り先"]},
+  {"key": "due_date", "label": "希望納期", "type": "date", "rule": ["希望納期", "納期", "納品日"]},
+  {"key": "subtotal", "label": "小計", "type": "number", "rule": ["小計"]},
+  {"key": "tax", "label": "消費税", "type": "number", "rule": ["消費税"]},
+  {"key": "total", "label": "合計", "type": "number", "rule": ["合計", "総額", "ご請求額"]},
+  {"key": "note", "label": "備考", "rule": ["備考"]}
+ ],
+ "items": [
+  {"key": "code", "label": "品番"},
+  {"key": "name", "label": "品名"},
+  {"key": "qty", "label": "数量", "type": "number"},
+  {"key": "unit", "label": "単位"},
+  {"key": "price", "label": "単価", "type": "number"},
+  {"key": "amount", "label": "金額", "type": "number"}
+ ]
+}
