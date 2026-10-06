@@ -60,7 +60,10 @@ foreach (explode("\r\n", substr($res, 0, $hsize)) as $h) {
 // 計測タグは設定したときだけ HTML に差し込む
 $body = substr($res, $hsize);
 if (defined('KOCRWORK_TRACK_JS') && (stripos(implode('', headers_list()), 'text/html') !== false || stripos($body, '<!doctype html') === 0)) {
-    // 再販パートナー募集の枠（中身は kurage_web/partner-bar.js。kurage.exbridge.jp 以外では何も出さない）
-    $body = str_replace('</head>', KOCRWORK_TRACK_JS . '<script src="https://kurage.exbridge.jp/partner-bar.js" defer></script>' . '</head>', $body);
+    $body = str_replace('</head>', KOCRWORK_TRACK_JS . '</head>', $body);
+}
+if (in_array($_SERVER['HTTP_HOST'] ?? '', array('kurage.exbridge.jp', 'proto.exbridge.jp'), true) && stripos($body, '</head>') !== false) {
+    // 共通ヘッダーと再販パートナー募集（kurage_web/partner-bar.js）。計測タグの有無に関係なく、当社の公開先だけに出す
+    $body = str_replace('</head>', '<script src="https://kurage.exbridge.jp/partner-bar.js" defer></script>' . '</head>', $body);
 }
 echo $body;
